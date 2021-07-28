@@ -16,7 +16,7 @@ app.listen(PORT, () => console.log('Connected'));
 
 app.get('/prova', async (req, res) => {
   try {
-    const client = await pool.connect();
+    const client = await db.connect();
     const result = await client.query('SELECT * FROM test_table');
     const results = { 'results': (result) ? result.rows : null};
     res.render('index', results);
