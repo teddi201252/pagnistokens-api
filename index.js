@@ -3,6 +3,9 @@ const app = express();
 const pg = require('pg');
 const PORT = process.env.PORT || 5000;
 
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
+
 const { Pool } = require('pg');
 const db = new Pool({
   connectionString: process.env.DATABASE_URL,
