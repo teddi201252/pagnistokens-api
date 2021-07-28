@@ -16,4 +16,5 @@ app.listen(PORT, () => console.log('Connected'));
 
 app.get('/prova', async (req, res) => {
     const client = await db.connect();
+    res.send(200);
 });
