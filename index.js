@@ -14,7 +14,6 @@ const db = new Pool({
 
 app.listen(PORT, () => console.log('Connected'));
 
-app.get('/prova', (req, res) => {
+app.get('/prova', async (req, res) => {
     const client = await db.connect();
-    
 });
