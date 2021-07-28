@@ -20,7 +20,7 @@ app.get('/', function (req, res) {
 app.get('/prova', async (req, res) => {
   try {
     const client = await db.connect();
-    const result = await client.query('SELECT * FROM test_table');
+    const result = await client.query('SELECT * FROM pgAdmin_test');
     const results = { 'results': (result) ? result.rows : null};
     res.send(results);
     client.release();
