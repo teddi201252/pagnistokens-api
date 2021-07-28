@@ -15,6 +15,14 @@ const db = new Pool({
 app.listen(PORT, () => console.log('Connected'));
 
 app.get('/prova', async (req, res) => {
-    const client = await db.connect();
-    res.send(200);
+  try {
+    const client = await pool.connect();
+    const result = await client.query('SELECT * FROM test_table');
+    const results = { 'results': (result) ? result.rows : null};
+    res.render('pages/db', results );
+    client.release();
+  } catch (err) {
+    console.error(err);
+    res.send("Error " + err);
+}
 });
