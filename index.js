@@ -3,12 +3,18 @@ const app = express();
 const pg = require('pg');
 const PORT = process.env.PORT || 5000;
 
-const connectionPG = process.env.DATABASE_URL;
-const pgClient = new pg.Client(connectionPG);
-pgClient.connect();
+const { Pool } = require('pg');
+const db = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
 
 app.listen(PORT, () => console.log('Connected'));
 
 app.get('/prova', (req, res) => {
-    res.sendStatus(200);
+    const client = await db.connect();
+    
 });
