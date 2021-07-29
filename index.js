@@ -19,7 +19,6 @@ app.get('/', function (req, res) {
 app.get('/users/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const client = await db.connect();
     const values = [ id ];
     const result = safeQuery('SELECT * FROM "users" WHERE id = $1', values);
     const results = { 'results': (result) ? result.rows : null};
@@ -32,11 +31,13 @@ app.get('/users/:id', async (req, res) => {
 });
 
 async function safeQuery(text, values){
+  const client = await db.connect();
   await client.query(text, values, (err, res)=>{
     if (err) {
       console.log(err.stack);
+      return null;
     } else {
-      return res.rows;
+      return res;
     }
   });
 }
