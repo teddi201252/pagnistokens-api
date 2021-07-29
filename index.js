@@ -31,7 +31,7 @@ app.get('/users/:id', async (req, res) => {
   }
 });
 
-function safeQuery(text, values){
+async function safeQuery(text, values){
   await client.query(text, values, (err, res)=>{
     if (err) {
       console.log(err.stack);
