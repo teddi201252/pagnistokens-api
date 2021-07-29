@@ -20,12 +20,23 @@ app.get('/users/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const client = await db.connect();
-    const result = await client.query('SELECT * FROM "users" WHERE id = ' + id);
+    const values = [ id ];
+    const result = safeQuery('SELECT * FROM "users" WHERE id = $1', values);
     const results = { 'results': (result) ? result.rows : null};
     res.send(results);
     client.release();
   } catch (err) {
     console.error(err);
     res.send("Error " + err);
-}
+  }
 });
+
+function safeQuery(text, values){
+  await client.query(text, values, (err, res)=>{
+    if (err) {
+      console.log(err.stack);
+    } else {
+      return res.rows;
+    }
+  });
+}
