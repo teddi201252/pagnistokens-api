@@ -1,43 +1,49 @@
 const express = require('express');
 const app = express();
-const PORT = process.env.PORT || 5000;
+const mysql = require('mysql2');
+const PORT = process.env.PORT;
 
-const { Pool } = require('pg');
-const db = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+const welcomePage = '/pagnistokens/';
+const usersUnavailablePage = '/pagnistokens/users';
+const usersPage = '/pagnistokens/users/:id';
+
+const dbConfig = {
+  host: 'localhost',
+  port: 3306,
+  user: process.env.MYSQL_USERNAME,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE
+};
+
+app.use(express.json());
+
+app.listen(PORT, () => console.log('Connected in ' + PORT));
+
+app.get(welcomePage, function (req, res) {
+  const connection = mysql.createConnection(dbConfig);
+  connection.connect();
+  connection.query("SELECT * from 'users'", function(err, rows, fields){
+    if(err){
+      throw err;
+    } 
+    res.send(rows);
+  });
+  connection.end();
 });
 
-app.listen(PORT, () => console.log('Connected'));
-
-app.get('/', function (req, res) {
-  res.send('Hello there');
+app.get(usersUnavailablePage, function (req, res) {
+  res.status(417).send('This page doesn\'t do anything.').send({});
 });
 
-app.get('/users/:id', async (req, res) => {
+app.get(usersPage, (req, res) => {
   try {
     const { id } = req.params;
     const values = [ id ];
-    const result = safeQuery('SELECT * FROM "users" WHERE id = $1', values);
-    const results = { 'results': (result) ? result.rows : null};
-    res.send(results);
+    const result = {'id': id, 'name': 'Bellissimo'};
+    res.send(result);
     client.release();
   } catch (err) {
     console.error(err);
     res.send("Error " + err);
   }
 });
-
-async function safeQuery(text, values){
-  const client = await db.connect();
-  await client.query(text, values, (err, res)=>{
-    if (err) {
-      console.log(err.stack);
-      return null;
-    } else {
-      return res;
-    }
-  });
-}
