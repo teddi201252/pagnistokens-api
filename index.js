@@ -3,8 +3,6 @@ const app = express();
 const mysql = require('mysql2');
 const PORT = process.env.PORT;
 
-const welcomePage = '/pagnistokens/';
-const usersPage = '/pagnistokens/users';
 const getUserNickPage = '/pagnistokens/users/@:username';
 const getUserPage = '/pagnistokens/users/:id';
 const getWalletPage = '/pagnistokens/wallets/:id';
@@ -34,24 +32,6 @@ const dbConfig = {
 app.use(express.json());
 
 app.listen(PORT, () => console.log('Connected in ' + PORT));
-
-app.get(welcomePage, function (req, res) {
-  res.send('Hello there');
-});
-
-app.get(usersPage, function (req, res) {
-  const connection = mysql.createConnection(dbConfig);
-  connection.connect();
-  connection.query('SELECT * from Users', function(err, rows, fields){
-    if(err){
-      res.status(420).send(err);
-    } 
-    else{
-      res.send(rows);
-    }
-  });
-  connection.end();
-});
 
 app.get(getUserNickPage, (req, res) => {
   try {
