@@ -145,7 +145,7 @@ app.get(getUserByWalletPage, (req, res) => {
     const values = [ walletId ];
     const connection = mysql.createConnection(dbConfig);
     connection.connect();
-    connection.query('SELECT * from Users WHERE walletid = ?', values, function(err, rows, fields){
+    connection.query('SELECT id, username, walletid from Users WHERE walletid = ?', values, function(err, rows, fields){
       if(err){
         res.status(420).send(err);
       } 
