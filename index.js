@@ -20,9 +20,13 @@ app.use(express.json());
 app.listen(PORT, () => console.log('Connected in ' + PORT));
 
 app.get(welcomePage, function (req, res) {
+  res.send('Hello there');
+});
+
+app.get(usersUnavailablePage, function (req, res) {
   const connection = mysql.createConnection(dbConfig);
   connection.connect();
-  connection.query("SELECT * from 'users'", function(err, rows, fields){
+  connection.query("SELECT * from users", function(err, rows, fields){
     if(err){
       throw err;
     } 
@@ -31,17 +35,19 @@ app.get(welcomePage, function (req, res) {
   connection.end();
 });
 
-app.get(usersUnavailablePage, function (req, res) {
-  res.status(417).send('This page doesn\'t do anything.').send({});
-});
-
 app.get(usersPage, (req, res) => {
   try {
     const { id } = req.params;
     const values = [ id ];
-    const result = {'id': id, 'name': 'Bellissimo'};
-    res.send(result);
-    client.release();
+    const connection = mysql.createConnection(dbConfig);
+    connection.connect();
+    connection.query('SELECT * from users WHERE id = ?', values, function(err, rows, fields){
+      if(err){
+        throw err;
+      } 
+      res.send(rows);
+    });
+  connection.end();
   } catch (err) {
     console.error(err);
     res.send("Error " + err);
