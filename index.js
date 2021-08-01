@@ -6,6 +6,8 @@ const PORT = process.env.PORT;
 const welcomePage = '/pagnistokens/';
 const usersUnavailablePage = '/pagnistokens/users';
 const usersPage = '/pagnistokens/users/:id';
+const getWalletPage = '/pagnistokens/wallets/:id';
+const getUserByWalletPage = '/pagnistokens/users/walletid/:walletId';
 
 const dbConfig = {
   host: 'localhost',
@@ -26,9 +28,9 @@ app.get(welcomePage, function (req, res) {
 app.get(usersUnavailablePage, function (req, res) {
   const connection = mysql.createConnection(dbConfig);
   connection.connect();
-  connection.query("SELECT * from users", function(err, rows, fields){
+  connection.query('SELECT * from Users', function(err, rows, fields){
     if(err){
-      throw err;
+      res.send(err);
     } 
     res.send(rows);
   });
@@ -41,15 +43,42 @@ app.get(usersPage, (req, res) => {
     const values = [ id ];
     const connection = mysql.createConnection(dbConfig);
     connection.connect();
-    connection.query('SELECT * from users WHERE id = ?', values, function(err, rows, fields){
+    connection.query('SELECT username, walletid from Users WHERE id = ?', values, function(err, rows, fields){
       if(err){
-        throw err;
+        res.send(err);
       } 
-      res.send(rows);
+      res.send(rows[0]);
     });
   connection.end();
   } catch (err) {
-    console.error(err);
     res.send("Error " + err);
   }
+});
+
+app.get(getWalletPage, (req, res) => {
+  const { id } = req.params;
+  const values = [ id ];
+  const connection = mysql.createConnection(dbConfig);
+  connection.connect();
+  connection.query('SELECT * from Wallets WHERE id = ?', values, function(err, rows, fields){
+    if(err){
+      res.send(err);
+    } 
+    res.send(rows[0]);
+  });
+  connection.end();
+});
+
+app.get(getUserByWalletPage, (req, res) => {
+  const { walletId } = req.params;
+  const values = [ walletId ];
+  const connection = mysql.createConnection(dbConfig);
+  connection.connect();
+  connection.query('SELECT * from Users WHERE walletid = ?', values, function(err, rows, fields){
+    if(err){
+      res.send(err);
+    } 
+    res.send(rows[0]);
+  });
+  connection.end();
 });
