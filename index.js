@@ -5,6 +5,7 @@ const PORT = process.env.PORT;
 
 const getUserNickPage = '/pagnistokens/users/@:username';
 const getUserPage = '/pagnistokens/users/:id';
+const loginRegisterPage = '/pagnistokens/users/';
 const getWalletPage = '/pagnistokens/wallets/:id';
 const paySomeonePage = '/pagnistokens/wallets';
 const getUserByWalletPage = '/pagnistokens/users/walletid/:walletId';
@@ -61,6 +62,26 @@ app.get(getUserPage, (req, res) => {
     const connection = mysql.createConnection(dbConfig);
     connection.connect();
     connection.query('SELECT id, username, walletid from Users WHERE id = ?', values, function(err, rows, fields){
+      if(err){
+        res.status(420).send(err);
+      } 
+      else{
+        res.send(rows[0]);
+      }
+    });
+    connection.end();
+  } catch (err) {
+    res.send("Error " + err);
+  }
+});
+
+app.get(loginRegisterPage, (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const values = [ username, password ];
+    const connection = mysql.createConnection(dbConfig);
+    connection.connect();
+    connection.query('SELECT * FROM Users WHERE username = ? AND password = ?', values, function(err, rows, fields){
       if(err){
         res.status(420).send(err);
       } 
@@ -207,6 +228,26 @@ app.route(notificationsPage)
       const connection = mysql.createConnection(dbConfig);
       connection.connect();
       connection.query('DELETE FROM Notifications WHERE id = ?', values, (err, rows, fields) => {
+        if(err){
+          res.status(420).send(err);
+        }
+        else{
+          res.send(rows);
+        }
+      });
+      connection.end();
+    }
+    catch(err){
+      res.status(466).send("Something's wrooong i can feel it " + err)
+    }
+  })
+  .put((req, res) => {
+    try {
+      const { id } = req.body;
+      const values = [id];
+      const connection = mysql.createConnection(dbConfig);
+      connection.connect();
+      connection.query('UPDATE Notifications SET seen = true WHERE id = ?', values, (err, rows, fields) => {
         if(err){
           res.status(420).send(err);
         }
