@@ -1,5 +1,9 @@
 const express = require('express');
 const app = express();
+const { 
+  v1: uuidv1,
+  v4: uuidv4,
+} = require('uuid');
 const mysql = require('mysql2');
 const PORT = process.env.PORT;
 
@@ -19,6 +23,7 @@ ERRORS LIST
 466 = bad json parsing
 420 = bad query
 421 = not enough money
+422 = wrong login
 
 */
 
@@ -75,18 +80,38 @@ app.get(getUserPage, (req, res) => {
   }
 });
 
-app.get(loginRegisterPage, (req, res) => {
+app.route(loginRegisterPage)
+  .get((req, res) => {
   try {
     const { username, password } = req.body;
     const values = [ username, password ];
     const connection = mysql.createConnection(dbConfig);
     connection.connect();
-    connection.query('SELECT * FROM Users WHERE username = ? AND password = ?', values, function(err, rows, fields){
+    connection.query('SELECT id, username, walletid FROM Users WHERE username = ? AND password = ?', values, function(err, rows, fields){
       if(err){
-        res.status(420).send(err);
+        res.status(422).send(err);
       } 
       else{
         res.send(rows[0]);
+      }
+    });
+    connection.end();
+  } catch (err) {
+    res.send("Error " + err);
+  }
+}).post((req, res) => {
+  try {
+    const { username, password } = req.body;
+    const newUuid = uuidv4();
+    const values = [ username, password, newUuid ];
+    const connection = mysql.createConnection(dbConfig);
+    connection.connect();
+    connection.query('INSERT INTO Users (id, username, password, walletid) VALUES (UUID_SHORT(), ?, ?, ?)', values, function(err, rows, fields){
+      if(err){
+        res.status(422).send(err);
+      } 
+      else{
+        res.send("Account created!");
       }
     });
     connection.end();
