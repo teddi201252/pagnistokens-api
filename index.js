@@ -103,15 +103,35 @@ app.route(loginRegisterPage)
   try {
     const { username, password } = req.body;
     const newUuid = uuidv4();
-    const values = [ username, password, newUuid ];
+    var values = [ username, password, newUuid ];
+    var insertedId;
     const connection = mysql.createConnection(dbConfig);
     connection.connect();
     connection.query('INSERT INTO Users (id, username, password, walletid) VALUES (UUID_SHORT(), ?, ?, ?)', values, function(err, rows, fields){
       if(err){
         res.status(422).send(err);
+        connection.end();
+        return;
+      }
+      else{
+        insertedId = rows.insertId;
+      }
+    });
+    values = [ newUuid ];
+    connection.query('INSERT INTO Wallets (id, balance) VALUES (?, 100)', values, function(err, rows, fields){
+      if(err){
+        res.status(422).send(err);
+        connection.end();
+        return;
       } 
       else{
-        res.send("Account created!");
+        res.send("Account creato!")
+      }
+    });
+    values = [ insertedId ];
+    connection.query('INSERT INTO Notifications (idUser, title, message) VALUES (?, "Premio!", "Hai ricevuto 100 token!")', values, function(err, rows, fields){
+      if(err){
+        res.status(422).send(err);
       }
     });
     connection.end();
