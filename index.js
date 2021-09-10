@@ -4,6 +4,8 @@ const {
   v1: uuidv1,
   v4: uuidv4,
 } = require('uuid');
+const { customAlphabet } = require('nanoid');
+const nanoid = customAlphabet('1234567890', 17);
 const mysql = require('mysql2');
 const PORT = process.env.PORT;
 
@@ -32,7 +34,8 @@ const dbConfig = {
   port: 3306,
   user: process.env.MYSQL_USERNAME,
   password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE
+  database: process.env.MYSQL_DATABASE,
+  supportBigNumbers: true
 };
 
 app.use(express.json());
@@ -102,19 +105,16 @@ app.route(loginRegisterPage)
 }).post((req, res) => {
   try {
     const { username, password } = req.body;
+    const userId = nanoid();
     const newUuid = uuidv4();
-    var values = [ username, password, newUuid ];
-    var insertedId;
+    var values = [ userId, username, password, newUuid ];
     const connection = mysql.createConnection(dbConfig);
     connection.connect();
-    connection.query('INSERT INTO Users (id, username, password, walletid) VALUES (UUID_SHORT(), ?, ?, ?)', values, function(err, rows, fields){
+    connection.query('INSERT INTO Users (id, username, password, walletid) VALUES (?, ?, ?, ?)', values, function(err, rows, fields){
       if(err){
         res.status(422).send(err);
         connection.end();
         return;
-      }
-      else{
-        insertedId = rows.insertId;
       }
     });
     values = [ newUuid ];
@@ -123,15 +123,14 @@ app.route(loginRegisterPage)
         res.status(422).send(err);
         connection.end();
         return;
-      } 
-      else{
-        res.send("Account creato!")
       }
     });
-    values = [ insertedId ];
+    values = [ userId ];
     connection.query('INSERT INTO Notifications (idUser, title, message) VALUES (?, "Premio!", "Hai ricevuto 100 token!")', values, function(err, rows, fields){
       if(err){
         res.status(422).send(err);
+      }else{
+        res.send("Account creato!");
       }
     });
     connection.end();
