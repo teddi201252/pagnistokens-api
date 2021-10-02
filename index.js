@@ -86,11 +86,12 @@ app.get(getUserPage, (req, res) => {
 app.route(loginRegisterPage)
   .get((req, res) => {
   try {
-    const { username, password } = req.body;
+    const username = req.get("username");
+    const password = req.get("password");
     const values = [ username, password ];
     const connection = mysql.createConnection(dbConfig);
     connection.connect();
-    connection.query('SELECT id, username, walletid FROM Users WHERE username = ? AND password = ?', values, function(err, rows, fields){
+    connection.query('SELECT id, username, walletid FROM Users WHERE username = ? AND password = SHA1(?)', values, function(err, rows, fields){
       if(err){
         res.status(422).send(err);
       } 
@@ -110,7 +111,7 @@ app.route(loginRegisterPage)
     var values = [ userId, username, password, newUuid ];
     const connection = mysql.createConnection(dbConfig);
     connection.connect();
-    connection.query('INSERT INTO Users (id, username, password, walletid) VALUES (?, ?, ?, ?)', values, function(err, rows, fields){
+    connection.query('INSERT INTO Users (id, username, password, walletid) VALUES (?, ?, SHA1(?), ?)', values, function(err, rows, fields){
       if(err){
         res.status(422).send(err);
         connection.end();
@@ -267,7 +268,7 @@ app.route(notificationsPage)
   })
   .delete((req, res) => {
     try {
-      const { id } = req.body;
+      const id = req.get("id");
       const values = [id];
       const connection = mysql.createConnection(dbConfig);
       connection.connect();
@@ -287,7 +288,7 @@ app.route(notificationsPage)
   })
   .put((req, res) => {
     try {
-      const { id } = req.body;
+      const id = req.get("id");
       const values = [id];
       const connection = mysql.createConnection(dbConfig);
       connection.connect();
