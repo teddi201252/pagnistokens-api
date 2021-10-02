@@ -18,6 +18,7 @@ const getUserByWalletPage = '/pagnistokens/users/walletid/:walletId';
 const notificationsPage = '/pagnistokens/notifications';
 const friendshipIsMagicPage = '/pagnistokens/friends';
 const getFriendshipIsMagicPage = '/pagnistokens/friends/:id';
+const gatchaPage = '/pagnistokens/gatcha';
 
 /*
 ERRORS LIST
@@ -383,6 +384,48 @@ app.get(getFriendshipIsMagicPage, (req, res)=>{
       }
     });
     connection.end();
+  }
+  catch(err){
+    res.status(466).send("Something's wrooong i can feel it " + err)
+  }
+});
+
+app.post(gatchaPage, (req, res)=>{
+  try {
+    console.log("Someone is gatching");
+    const { walletId, nOfPulls } = req.body;
+    const costOfPull = 5;
+    const connection = mysql.createConnection(dbConfig);
+    connection.connect();
+    //Check if sender have enough money
+    var money = 1;
+    var values = [walletId];
+    connection.query('SELECT * FROM Wallets WHERE id = ?', values, function(err, rows, fields){
+      if(err){
+        res.status(420).send(err.message);
+        connection.end();
+      } 
+      money = rows[0].balance;
+      if(money - amount >= 0){ //If enough money, make updates
+        values = [ nOfPulls * costOfPull, walletId];
+        connection.query('UPDATE Wallets SET balance = balance - ? WHERE id = ?', values, function(err, rows, fields){
+          if(err){
+            res.status(420).send(err.message);
+          }
+        });
+
+        var pulls = [];
+        for (let index = 0; index < nOfPulls; index++) {
+          pulls[index] = Math.floor(Math.random() * 10);
+        }
+        res.send({message: pulls});
+
+      }else{
+        res.status(421).send({message: "Not enough money"});
+      }
+      
+      connection.end();
+    });
   }
   catch(err){
     res.status(466).send("Something's wrooong i can feel it " + err)
