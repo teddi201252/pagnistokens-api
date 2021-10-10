@@ -18,6 +18,7 @@ const getUserByWalletPage = '/pagnistokens/users/walletid/:walletId';
 const notificationsPage = '/pagnistokens/notifications';
 const friendshipIsMagicPage = '/pagnistokens/friends';
 const getFriendshipIsMagicPage = '/pagnistokens/friends/:id';
+const terereersPage = '/pagnistokens/terereers';
 const gatchaPage = '/pagnistokens/gatcha';
 
 /*
@@ -36,6 +37,15 @@ const dbConfig = {
   user: process.env.MYSQL_USERNAME,
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DATABASE,
+  supportBigNumbers: true
+};
+
+const dbConfigTerereers = {
+  host: 'localhost',
+  port: 3306,
+  user: process.env.MYSQL_TEREREERS_USERNAME,
+  password: process.env.MYSQL_TEREREERS_PASSWORD,
+  database: process.env.MYSQL_TEREREERS_DATABASE,
   supportBigNumbers: true
 };
 
@@ -390,44 +400,63 @@ app.get(getFriendshipIsMagicPage, (req, res)=>{
   }
 });
 
-app.post(gatchaPage, (req, res)=>{
+app.get(terereersPage, (req, res) => {
   try {
-    console.log("Someone is gatching");
-    const { walletId, nOfPulls } = req.body;
-    const costOfPull = 5;
-    const connection = mysql.createConnection(dbConfig);
+    const id = req.get("id");
+    const values = [ id ];
+    const connection = mysql.createConnection(dbConfigTerereers);
     connection.connect();
-    //Check if sender have enough money
-    var money = 1;
-    var values = [walletId];
-    connection.query('SELECT * FROM Wallets WHERE id = ?', values, function(err, rows, fields){
+    connection.query('SELECT * FROM baseStats WHERE id = ?', values, function(err, rows, fields){
       if(err){
-        res.status(420).send(err.message);
-        connection.end();
+        res.status(420).send(err);
       } 
-      money = rows[0].balance;
-      if(money - amount >= 0){ //If enough money, make updates
-        values = [ nOfPulls * costOfPull, walletId];
-        connection.query('UPDATE Wallets SET balance = balance - ? WHERE id = ?', values, function(err, rows, fields){
-          if(err){
-            res.status(420).send(err.message);
-          }
-        });
-
-        var pulls = [];
-        for (let index = 0; index < nOfPulls; index++) {
-          pulls[index] = Math.floor(Math.random() * 10);
-        }
-        res.send({message: pulls});
-
-      }else{
-        res.status(421).send({message: "Not enough money"});
+      else{
+        res.send(rows[0]);
       }
-      
-      connection.end();
     });
-  }
-  catch(err){
-    res.status(466).send("Something's wrooong i can feel it " + err)
+    connection.end();
+  } catch (err) {
+    res.send("Error " + err);
   }
 });
+
+// app.post(gatchaPage, (req, res)=>{
+//   try {
+//     const { walletId, nOfPulls } = req.body;
+//     const costOfPull = 5;
+//     const connection = mysql.createConnection(dbConfig);
+//     connection.connect();
+//     //Check if sender have enough money
+//     var money = 1;
+//     var values = [walletId];
+//     connection.query('SELECT * FROM Wallets WHERE id = ?', values, function(err, rows, fields){
+//       if(err){
+//         res.status(420).send(err.message);
+//         connection.end();
+//       } 
+//       money = rows[0].balance;
+//       if(money - amount >= 0){ //If enough money, make updates
+//         values = [ nOfPulls * costOfPull, walletId];
+//         connection.query('UPDATE Wallets SET balance = balance - ? WHERE id = ?', values, function(err, rows, fields){
+//           if(err){
+//             res.status(420).send(err.message);
+//           }
+//         });
+
+//         var pulls = [];
+//         for (let index = 0; index < nOfPulls; index++) {
+//           pulls[index] = Math.floor(Math.random() * 10);
+//         }
+//         res.send({message: pulls});
+
+//       }else{
+//         res.status(421).send({message: "Not enough money"});
+//       }
+      
+//       connection.end();
+//     });
+//   }
+//   catch(err){
+//     res.status(466).send("Something's wrooong i can feel it " + err)
+//   }
+// });
